@@ -1,43 +1,61 @@
 import 'dart:convert';
 
-import 'package:bloggo_app/blocs/table_cubit.dart';
 import 'package:bloggo_app/models/post.dart';
 import 'package:http/http.dart' as http;
 
 class PostRepository {
-  Future<List<Post>> fetchPosts({
-    int? page = 1,
+  final address = "https://jsonplaceholder.typicode.com";
+
+  Future<PostResponse> fetchPosts({
+    int? page,
     int? limit,
   }) async {
-    // Fetch posts from API
-    final response = await http.get(
-      Uri.parse(
-          "https://jsonplaceholder.typicode.com/posts?_page=$page&_limit=${limit ?? TableEntryLimit.l10.value}"),
-    );
+    final params =
+        (page != null && limit != null) ? "?_page=$page&_limit=$limit" : "";
+    final url = Uri.parse("$address/posts$params");
+    print("Fetching posts from $url");
+
+    final response = await http.get(url);
+    print("Response status: ${response.statusCode}");
     if (response.statusCode == 200) {
-      // If the server did return a 200 OK response,
-      // then parse the JSON.
+      // Accessing the headers
+      final headers = response.headers;
+      final totalCount = headers['x-total-count']; // total count of elements
+
       List<dynamic> body = jsonDecode(response.body);
-      return body.map((dynamic item) => Post.fromJson(item)).toList();
+      final posts = body.map((dynamic item) => Post.fromJson(item)).toList();
+
+      // Get comments and user for each post
+      for (var post in posts) {
+        final userResponse = await http.get(
+          Uri.parse("$address/users/${post.userId}"),
+        );
+        if (userResponse.statusCode == 200) {
+          post.addUser(jsonDecode(userResponse.body));
+        }
+
+        final commentsResponse = await http.get(
+          Uri.parse("$address/posts/${post.id}/comments"),
+        );
+        if (commentsResponse.statusCode == 200) {
+          List<dynamic> commentsBody = jsonDecode(commentsResponse.body);
+          post.addComments(commentsBody);
+        }
+      }
+
+      return PostResponse(
+          data: posts, totalCount: int.parse(totalCount ?? '0'));
     } else {
-      // If the server did not return a 200 OK response,
-      // then throw an exception.
-      throw Exception('Failed to load album');
+      throw Exception('Failed to load posts');
     }
   }
 
   Future<Post> fetchPostById(int id) async {
-    // Fetch post by ID from API
-    final response = await http
-        .get(Uri.parse('https://jsonplaceholder.typicode.com/posts/$id'));
+    final response = await http.get(Uri.parse('$address/posts/$id'));
 
     if (response.statusCode == 200) {
-      // If the server did return a 200 OK response,
-      // then parse the JSON.
       return Post.fromJson(jsonDecode(response.body));
     } else {
-      // If the server did not return a 200 OK response,
-      // then throw an exception.
       throw Exception('Failed to load album');
     }
   }
@@ -53,4 +71,14 @@ class PostRepository {
   Future<void> deletePost(int id) async {
     // Delete post in API
   }
+}
+
+class PostResponse {
+  final List<Post> data;
+  final int totalCount;
+
+  PostResponse({
+    required this.data,
+    required this.totalCount,
+  });
 }

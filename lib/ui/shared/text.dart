@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 
+// ignore: must_be_immutable
 class Txt extends StatelessWidget {
   final String text;
   final double size;
   final Color color;
   final FontWeight weight;
   final TextAlign align;
-  final TextStyle style = const TextStyle(
+  TextStyle style = const TextStyle(
     fontSize: 14,
     color: Colors.black,
     fontWeight: FontWeight.normal,
   );
 
-  const Txt(
+  Txt(
     this.text, {
     super.key,
     this.size = 14,
@@ -24,12 +25,12 @@ class Txt extends StatelessWidget {
   Txt.bold(
     this.text, {
     super.key,
-    this.size = 16,
+    this.size = 20,
     this.color = Colors.black,
     this.weight = FontWeight.bold,
-    this.align = TextAlign.left,
+    this.align = TextAlign.center,
   }) {
-    style.copyWith(fontWeight: weight);
+    style = style.copyWith(fontWeight: weight);
   }
 
   @override

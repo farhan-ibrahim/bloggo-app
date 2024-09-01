@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 
 class Input extends StatelessWidget {
-  const Input({super.key});
+  final String defaultValue;
+  const Input({super.key, this.defaultValue = ''});
 
   @override
   Widget build(BuildContext context) {
-    return const Expanded(
+    final TextEditingController controller =
+        TextEditingController(text: defaultValue);
+
+    return Expanded(
       child: TextField(
-        decoration: InputDecoration(
+        controller: controller,
+        decoration: const InputDecoration(
           border: OutlineInputBorder(),
         ),
       ),

@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:bloggo_app/blocs/table_cubit.dart';
 import 'package:bloggo_app/models/post.dart';
 import 'package:bloggo_app/repositories/post.dart';
 
@@ -12,27 +13,34 @@ class PostsCubit extends Cubit<PostsState> {
   void getAll() async {
     emit(PostsState.loading());
     try {
-      final posts = await repository.fetchPosts();
-      emit(PostsState.success(posts));
+      final response = await repository.fetchPosts();
+      emit(PostsState.success(response.data));
     } catch (e) {
       emit(PostsState.failure(e.toString()));
     }
   }
 
-  void getPosts({
+  Future<bool> getPosts({
     int? page,
     int? limit,
   }) async {
     emit(PostsState.loading());
+    late bool result = false;
     try {
-      final posts = await repository.fetchPosts(
+      final response = await repository.fetchPosts(
         page: page,
         limit: limit,
       );
-      emit(PostsState.success(posts));
+      emit(PostsState.success(response.data));
+      final totalCount = response.totalCount;
+      final currentPage = page ?? 1;
+      final currentLimit = limit ?? TableEntryLimit.l10.value;
+      final hasReachedMax = currentPage * currentLimit >= totalCount;
+      result = hasReachedMax;
     } catch (e) {
       emit(PostsState.failure(e.toString()));
     }
+    return result;
   }
 }
 

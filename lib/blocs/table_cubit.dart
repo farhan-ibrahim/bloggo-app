@@ -8,11 +8,11 @@ enum TableEntryLimit {
   l10(10),
   l20(20),
   l50(50),
-  lAll(15);
+  lAll(1000); // 1000 is a placeholder for all
 
   const TableEntryLimit(this.value);
   final int value;
-  String get label => value == 15 ? 'All' : value.toString();
+  String get label => value > 50 ? 'All' : value.toString();
 }
 
 class TableCubit extends Cubit<TableState> {
@@ -23,24 +23,61 @@ class TableCubit extends Cubit<TableState> {
   TableCubit(this.postCubit) : super(TableState.initial());
 
   void onChangeLimit(TableEntryLimit limit) async {
-    emit(TableState.loading());
+    emit(TableState.loading(
+      limit: limit,
+      page: state.page,
+    ));
     try {
       if (limit == TableEntryLimit.lAll) {
         postCubit.getAll();
-        emit(TableState.success(limit: limit, page: state.page));
+        emit(TableState.success(limit: limit, page: 1, hasReachedMax: true));
         return;
       }
 
-      emit(TableState.success(limit: limit, page: state.page));
-      postCubit.getPosts(limit: limit.value, page: state.page);
+      final hasReachedMax = await postCubit.getPosts(
+        limit: limit.value,
+        page: state.page,
+      );
+
+      emit(TableState.success(
+        limit: limit,
+        page: state.page,
+        hasReachedMax: hasReachedMax,
+      ));
     } catch (e) {
       emit(TableState.failure(e.toString()));
     }
   }
 
-  void onChangePage(int page) async {
-    emit(TableState.loading());
-    postCubit.getPosts(page: page, limit: state.limit.value);
+  void onChangePage(int pageToGo) async {
+    emit(TableState.loading(
+      limit: state.limit,
+      page: pageToGo,
+    ));
+    try {
+      final hasReachedMax =
+          await postCubit.getPosts(page: pageToGo, limit: state.limit.value);
+
+      emit(TableState.success(
+        limit: state.limit,
+        page: pageToGo,
+        hasReachedMax: hasReachedMax,
+      ));
+    } catch (e) {
+      emit(TableState.failure(e.toString()));
+    }
+  }
+
+  void hasReachedMax(int totalCount) {
+    if (state.page * state.limit.value >= totalCount) {
+      emit(TableState(
+        status: TableStatus.loading,
+        limit: state.limit,
+        page: state.page,
+        hasReachedMax: true,
+      ));
+    }
+    emit(TableState.loading(limit: state.limit, page: state.page));
   }
 }
 
@@ -49,6 +86,7 @@ class TableState {
   final TableEntryLimit limit;
   final int page;
   final String keyword;
+  final bool hasReachedMax;
   final String error;
 
   TableState({
@@ -57,19 +95,31 @@ class TableState {
     this.page = 1,
     this.keyword = '',
     this.error = '',
+    this.hasReachedMax = false,
   });
 
   TableState.initial()
-      : this(status: TableStatus.initial, limit: TableEntryLimit.l10);
-  TableState.loading() : this(status: TableStatus.loading);
+      : this(
+          status: TableStatus.initial,
+          limit: TableEntryLimit.l10,
+        );
+  TableState.loading({
+    required TableEntryLimit limit,
+    required int page,
+  }) : this(
+          status: TableStatus.loading,
+          limit: limit,
+          page: page,
+        );
   TableState.success({
     required TableEntryLimit limit,
     required int page,
-    String searchKeyword = '',
+    bool hasReachedMax = false,
   }) : this(
           status: TableStatus.success,
           limit: limit,
-          keyword: searchKeyword,
+          page: page,
+          hasReachedMax: hasReachedMax,
         );
   TableState.failure(String error)
       : this(

@@ -1,9 +1,11 @@
 import 'package:bloggo_app/blocs/posts_cubit.dart';
 import 'package:bloggo_app/blocs/table_cubit.dart';
 import 'package:bloggo_app/ui/components/toolbar.dart';
-import 'package:bloggo_app/ui/shared/text.dart';
+import 'package:bloggo_app/ui/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../components/footer.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -30,26 +32,22 @@ class __HomeScreenState extends State<HomeScreen> {
           textAlign: TextAlign.left,
         ),
       ),
-      body: SizedBox(
+      body: Container(
         width: MediaQuery.of(context).size.width,
         height: MediaQuery.of(context).size.height,
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: ThemeColor.primary,
+            width: 2,
+          ),
+        ),
         child: Column(
           children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey[500]!),
-              ),
-              height: 50,
-              child: const Toolbar(),
-            ),
+            const Toolbar(),
             Expanded(
               child: SingleChildScrollView(
                 child: BlocBuilder<PostsCubit, PostsState>(
                   builder: (ctx, state) {
-                    print("STATE: ${state.status}");
-                    print("STATE: ${state.posts.length}");
-
                     switch (state.status) {
                       case PostsStatus.initial:
                         context
@@ -60,18 +58,61 @@ class __HomeScreenState extends State<HomeScreen> {
                         return const Center(child: CircularProgressIndicator());
                       case PostsStatus.success:
                         return DataTable(
+                            columnSpacing: 30,
                             headingRowColor: WidgetStateColor.resolveWith(
-                                (states) =>
-                                    const Color.fromARGB(255, 241, 240, 245)),
-                            columns: [
-                              DataColumn(label: Txt.bold('Title')),
-                              DataColumn(label: Txt.bold('Body')),
+                                (states) => ThemeColor.primary),
+                            headingTextStyle: const TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            columns: const [
+                              DataColumn(label: Text('TITLE')),
+                              DataColumn(label: Text('SUMMARY')),
+                              DataColumn(label: Text('AUTHOR')),
+                              DataColumn(label: Text('EMAIL')),
+                              DataColumn(label: Text('COMMENTS')),
+                              DataColumn(label: Center(child: Text('ACTIONS'))),
                             ],
                             rows: [
                               for (final post in state.posts)
                                 DataRow(cells: [
                                   DataCell(Text(post.title)),
-                                  DataCell(Text(post.body)),
+                                  DataCell(
+                                    ConstrainedBox(
+                                        constraints: const BoxConstraints(
+                                          maxWidth: 200,
+                                        ),
+                                        child: Text(post.summary)),
+                                  ),
+                                  DataCell(Text(post.user!.name)),
+                                  DataCell(Text(post.user!.email)),
+                                  DataCell(
+                                    Center(
+                                      child:
+                                          Text(post.commentsCount.toString()),
+                                    ),
+                                  ),
+                                  DataCell(Row(
+                                    children: [
+                                      IconButton(
+                                          onPressed: () {
+                                            print("READ MORE");
+                                          },
+                                          icon: const Icon(Icons.read_more)),
+                                      IconButton(
+                                        icon: const Icon(Icons.edit),
+                                        onPressed: () {
+                                          print("EDIT");
+                                        },
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete),
+                                        onPressed: () {
+                                          print("DELETE");
+                                        },
+                                      ),
+                                    ],
+                                  )),
                                 ]),
                             ]);
                       case PostsStatus.failure:
@@ -83,6 +124,7 @@ class __HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
+            const Footer(),
           ],
         ),
       ),
