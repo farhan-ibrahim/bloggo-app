@@ -42,6 +42,10 @@ class PostsCubit extends Cubit<PostsState> {
     }
     return result;
   }
+
+  void reset() {
+    emit(PostsState.initial());
+  }
 }
 
 class PostsState {
@@ -58,10 +62,12 @@ class PostsState {
   PostsState.initial()
       : this(
           status: PostsStatus.initial,
+          posts: [],
+          error: '',
         );
   PostsState.loading() : this(status: PostsStatus.loading);
   PostsState.success(List<Post> posts)
-      : this(status: PostsStatus.success, posts: posts);
+      : this(status: PostsStatus.success, posts: posts, error: '');
   PostsState.failure(String error)
       : this(status: PostsStatus.failure, posts: [], error: error);
 }

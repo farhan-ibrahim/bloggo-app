@@ -1,3 +1,4 @@
+import 'package:bloggo_app/blocs/auth_cubit.dart';
 import 'package:bloggo_app/blocs/posts_cubit.dart';
 import 'package:bloggo_app/ui/screens/Home.dart';
 import 'package:bloggo_app/ui/screens/post.dart';
@@ -19,7 +20,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Bloggo.io',
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -46,6 +47,7 @@ class MyApp extends StatelessWidget {
               BlocProvider(
                 create: (context) => TableCubit(context.read<PostsCubit>()),
               ),
+              BlocProvider(create: (context) => AuthCubit()),
             ], child: const HomeScreen()),
         '/post': (context) => const PostScreen(),
       },

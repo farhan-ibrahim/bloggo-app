@@ -22,15 +22,15 @@ class Txt extends StatelessWidget {
     this.align = TextAlign.left,
   });
 
-  Txt.bold(
+  Txt.title(
     this.text, {
     super.key,
-    this.size = 20,
+    this.size = 25,
     this.color = Colors.black,
-    this.weight = FontWeight.bold,
+    this.weight = FontWeight.w800,
     this.align = TextAlign.center,
   }) {
-    style = style.copyWith(fontWeight: weight);
+    style = style.copyWith(fontWeight: weight, fontSize: size, color: color);
   }
 
   @override

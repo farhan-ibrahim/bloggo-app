@@ -27,6 +27,12 @@ class Post {
     );
   }
 
+  Map<String, dynamic> toJson() => {
+        'userId': userId,
+        'title': title,
+        'body': body,
+      };
+
   addUser(Map<String, dynamic> json) {
     user = User.fromJson(json);
   }

@@ -62,6 +62,13 @@ class PostRepository {
 
   Future<void> createPost(Post post) async {
     // Create post in API
+    final response = await http.post(
+      Uri.parse('$address/posts'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(post.toJson()),
+    );
   }
 
   Future<void> updatePost(Post post) async {
