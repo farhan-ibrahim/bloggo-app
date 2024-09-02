@@ -52,6 +52,7 @@ class MyApp extends StatelessWidget {
         '/post': (context) => MultiBlocProvider(
               providers: [
                 BlocProvider(create: (context) => PostsCubit()),
+                BlocProvider(create: (context) => AuthCubit()),
               ],
               child: PostScreen(
                 args:

@@ -1,3 +1,6 @@
+import 'dart:math';
+
+import 'package:bloggo_app/blocs/auth_cubit.dart';
 import 'package:bloggo_app/blocs/posts_cubit.dart';
 import 'package:bloggo_app/models/post.dart';
 import 'package:bloggo_app/ui/components/comment.dart';
@@ -27,7 +30,7 @@ class __PostScreenState extends State<PostScreen> {
   @override
   void initState() {
     super.initState();
-    if (widget.args?.postId != null) {
+    if (widget.args?.postId != null && widget.args?.postId != 0) {
       context.read<PostsCubit>().getPost(widget.args?.postId ?? 0);
       context.read<PostsCubit>().getComments(widget.args?.postId ?? 0);
     }
@@ -36,6 +39,7 @@ class __PostScreenState extends State<PostScreen> {
   @override
   Widget build(BuildContext context) {
     final post = context.select((PostsCubit cubit) => cubit.state.post);
+    final user = context.select((AuthCubit cubit) => cubit.state.user);
 
     TextEditingController titleController =
         TextEditingController(text: post?.title);
@@ -82,19 +86,34 @@ class __PostScreenState extends State<PostScreen> {
                           const Spacer(),
                           ElevatedButton(
                             onPressed: () {
-                              context
-                                  .read<PostsCubit>()
-                                  .updatePost(
-                                    Post(
-                                      userId: post?.userId ?? 0,
-                                      id: post?.id ?? 0,
-                                      title: titleController.text,
-                                      body: bodyController.text,
-                                    ),
-                                  )
-                                  .then((_) => Navigator.of(context).pop());
+                              if (widget.args?.postId == 0) {
+                                context
+                                    .read<PostsCubit>()
+                                    .createPost(
+                                      Post(
+                                        userId: user?.id ?? 0,
+                                        id: Random().nextInt(1000),
+                                        title: titleController.text,
+                                        body: bodyController.text,
+                                      ),
+                                    )
+                                    .then((_) => Navigator.of(context).pop());
+                              } else {
+                                context
+                                    .read<PostsCubit>()
+                                    .updatePost(
+                                      Post(
+                                        userId: post?.userId ?? 0,
+                                        id: post?.id ?? 0,
+                                        title: titleController.text,
+                                        body: bodyController.text,
+                                      ),
+                                    )
+                                    .then((_) => Navigator.of(context).pop());
+                              }
                             },
-                            child: const Text('Update'),
+                            child: Text(
+                                widget.args?.postId == 0 ? 'Create' : 'Update'),
                           ),
                         ],
                       )

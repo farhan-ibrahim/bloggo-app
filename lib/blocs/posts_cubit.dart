@@ -66,13 +66,13 @@ class PostsCubit extends Cubit<PostsState> {
     }
   }
 
-  Future<void> updatePost(Post post) async {
-    emit(PostsState.loading());
+  Future<void> createPost(Post post) async {
+    emit(PostsState.loading(state.posts));
     try {
-      final updatedPost = await repository.updatePost(post);
+      final newPost = await repository.createPost(post);
       emit(PostsState(
         status: PostsStatus.success,
-        post: updatedPost,
+        posts: state.posts..insert(0, newPost),
         comments: state.comments,
       ));
     } catch (e) {
@@ -80,12 +80,31 @@ class PostsCubit extends Cubit<PostsState> {
     }
   }
 
+  Future<void> updatePost(Post post) async {
+    emit(PostsState.loading(state.posts));
+    try {
+      final updatedPost = await repository.updatePost(post);
+      emit(PostsState(
+        status: PostsStatus.success,
+        post: updatedPost,
+        comments: state.comments,
+        posts: state.posts.map((Post p) {
+          if (p.id == updatedPost.id) {
+            return updatedPost;
+          }
+          return p;
+        }).toList(),
+      ));
+    } catch (e) {
+      emit(PostsState(status: PostsStatus.failure, error: e.toString()));
+    }
+  }
+
   Future<void> deletePost(int postId) async {
-    final list = state.posts.where((Post post) => post.id != postId).toList();
-    emit(PostsState.loading());
+    emit(PostsState.loading(state.posts));
     try {
       await repository.deletePost(postId);
-
+      final list = state.posts.where((Post post) => post.id != postId).toList();
       emit(PostsState(
         status: PostsStatus.success,
         posts: list,
@@ -122,7 +141,8 @@ class PostsState {
           posts: [],
           error: '',
         );
-  PostsState.loading() : this(status: PostsStatus.loading);
+  PostsState.loading([List<Post>? posts])
+      : this(status: PostsStatus.loading, posts: posts ?? []);
   PostsState.success(List<Post> posts)
       : this(status: PostsStatus.success, posts: posts, error: '');
   PostsState.failure(String error)

@@ -42,7 +42,7 @@ class AuthState {
   });
 
   AuthState.initial()
-      : this(status: AuthStatus.initial, error: '', auth: true, user: null);
+      : this(status: AuthStatus.initial, error: '', auth: false, user: null);
   AuthState.loading() : this(status: AuthStatus.loading, error: '');
   AuthState.success(User user, bool auth)
       : this(status: AuthStatus.success, user: user, auth: auth, error: '');
