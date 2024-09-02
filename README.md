@@ -1,16 +1,43 @@
 # bloggo_app
 
-A new Flutter project.
+A new Flutter project using Flutter Bloc to display blog posts
+
+## File Structure
+
+- main
+- lib
+- - blocs
+  - - posts_cubit.dart
+    - table_cubit.dart
+  - models
+  - - post.dart
+    - user.dart
+  - repositories
+  - - post.dart
+    - user.dart
+  - ui
+  - - screens
+    - - home.dart
+      - post.dart
+    - components
+    - - header.dart
+      - footer.dart
+  - main.dart
+
+
+
+## Demo
+
+Web
+
+https://github.com/user-attachments/assets/511e507b-119a-414c-9ee5-8e51cdc9df5d
+
+Mobile
+
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+```bash
+flutter run
+```
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
