@@ -31,7 +31,7 @@ class _HeaderState extends State<Header> {
         Txt.title('Bloggo'),
         const Spacer(),
         if (authState.auth) ...[
-          Txt(authState.user!.name),
+          Txt(authState.user?.name ?? "User"),
           Row(
             children: [
               Column(

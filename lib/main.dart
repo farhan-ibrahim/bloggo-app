@@ -49,7 +49,15 @@ class MyApp extends StatelessWidget {
               ),
               BlocProvider(create: (context) => AuthCubit()),
             ], child: const HomeScreen()),
-        '/post': (context) => const PostScreen(),
+        '/post': (context) => MultiBlocProvider(
+              providers: [
+                BlocProvider(create: (context) => PostsCubit()),
+              ],
+              child: PostScreen(
+                args:
+                    ModalRoute.of(context)!.settings.arguments as PostArgument,
+              ),
+            ),
       },
     );
   }

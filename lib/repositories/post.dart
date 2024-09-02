@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:bloggo_app/models/comment.dart';
 import 'package:bloggo_app/models/post.dart';
 import 'package:http/http.dart' as http;
 
@@ -60,7 +61,20 @@ class PostRepository {
     }
   }
 
-  Future<void> createPost(Post post) async {
+  Future<List<Comment>> fetchComments(int postId) async {
+    final response = await http.get(
+      Uri.parse('$address/posts/$postId/comments'),
+    );
+
+    if (response.statusCode == 200) {
+      List<dynamic> commentsBody = jsonDecode(response.body);
+      return commentsBody.map((item) => Comment.fromJson(item)).toList();
+    } else {
+      throw Exception('Failed to load comments');
+    }
+  }
+
+  Future<Post> createPost(Post post) async {
     // Create post in API
     final response = await http.post(
       Uri.parse('$address/posts'),
@@ -69,14 +83,39 @@ class PostRepository {
       },
       body: jsonEncode(post.toJson()),
     );
+
+    if (response.statusCode == 200) {
+      return Post.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Failed to update post');
+    }
   }
 
-  Future<void> updatePost(Post post) async {
+  Future<Post> updatePost(Post post) async {
     // Update post in API
+    final response = await http.put(
+      Uri.parse('$address/posts/${post.id}'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(post.toJson()),
+    );
+
+    if (response.statusCode == 200) {
+      return Post.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Failed to update post');
+    }
   }
 
-  Future<void> deletePost(int id) async {
+  Future<bool> deletePost(int id) async {
     // Delete post in API
+    final response = await http.delete(Uri.parse('$address/posts/$id'));
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      throw Exception('Failed to update post');
+    }
   }
 }
 

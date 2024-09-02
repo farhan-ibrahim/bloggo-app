@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:bloggo_app/blocs/table_cubit.dart';
+import 'package:bloggo_app/models/comment.dart';
 import 'package:bloggo_app/models/post.dart';
 import 'package:bloggo_app/repositories/post.dart';
 
@@ -43,6 +44,58 @@ class PostsCubit extends Cubit<PostsState> {
     return result;
   }
 
+  void getPost(int id) async {
+    emit(PostsState.loading());
+    try {
+      final post = await repository.fetchPostById(id);
+      emit(PostsState(
+          status: PostsStatus.success, post: post, comments: state.comments));
+    } catch (e) {
+      emit(PostsState(status: PostsStatus.failure, error: e.toString()));
+    }
+  }
+
+  void getComments(int postId) async {
+    emit(PostsState.loading());
+    try {
+      final comments = await repository.fetchComments(postId);
+      emit(PostsState(
+          status: PostsStatus.success, comments: comments, post: state.post));
+    } catch (e) {
+      emit(PostsState(status: PostsStatus.failure, error: e.toString()));
+    }
+  }
+
+  Future<void> updatePost(Post post) async {
+    emit(PostsState.loading());
+    try {
+      final updatedPost = await repository.updatePost(post);
+      emit(PostsState(
+        status: PostsStatus.success,
+        post: updatedPost,
+        comments: state.comments,
+      ));
+    } catch (e) {
+      emit(PostsState(status: PostsStatus.failure, error: e.toString()));
+    }
+  }
+
+  Future<void> deletePost(int postId) async {
+    final list = state.posts.where((Post post) => post.id != postId).toList();
+    emit(PostsState.loading());
+    try {
+      await repository.deletePost(postId);
+
+      emit(PostsState(
+        status: PostsStatus.success,
+        posts: list,
+        comments: state.comments,
+      ));
+    } catch (e) {
+      emit(PostsState(status: PostsStatus.failure, error: e.toString()));
+    }
+  }
+
   void reset() {
     emit(PostsState.initial());
   }
@@ -52,11 +105,15 @@ class PostsState {
   final PostsStatus status;
   final List<Post> posts;
   final String error;
+  final Post? post;
+  final List<Comment>? comments;
 
   PostsState({
     required this.status,
     this.posts = const [],
     this.error = '',
+    this.post,
+    this.comments = const [],
   });
 
   PostsState.initial()

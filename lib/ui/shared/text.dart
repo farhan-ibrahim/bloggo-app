@@ -28,7 +28,18 @@ class Txt extends StatelessWidget {
     this.size = 25,
     this.color = Colors.black,
     this.weight = FontWeight.w800,
-    this.align = TextAlign.center,
+    this.align = TextAlign.left,
+  }) {
+    style = style.copyWith(fontWeight: weight, fontSize: size, color: color);
+  }
+
+  Txt.caption(
+    this.text, {
+    super.key,
+    this.size = 12,
+    this.color = Colors.grey,
+    this.weight = FontWeight.w200,
+    this.align = TextAlign.left,
   }) {
     style = style.copyWith(fontWeight: weight, fontSize: size, color: color);
   }

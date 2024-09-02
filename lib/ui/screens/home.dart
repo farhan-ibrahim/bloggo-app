@@ -92,9 +92,7 @@ class __HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Toolbar(),
-            Expanded(
-              child: SingleChildScrollView(child: ListTable()),
-            ),
+            ListTable(),
             Footer(),
           ],
         ),
